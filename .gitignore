@@ -1,3 +1,12 @@
+# LaTeX build artifacts (keep source .tex and final .pdf)
+*.aux
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.log
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
