@@ -60,18 +60,21 @@ Regardless of the channel, the Sales Manager notices and records the order detai
 
 \subsubsection{Stock Availability Check}
 
-Once the order is recorded, two checks are performed in parallel by the Warehouse Worker:
+Once the order is recorded, the Warehouse Worker first performs a \textbf{wine stock check} to determine whether all requested wine types and quantities are available:
+\begin{itemize}
+    \item If \textbf{partially or fully unavailable at the winery but available at the wine cellar}: the missing wine must be transported from the cellar to the winery before proceeding.
+    \item If a wine type is \textbf{completely out of stock} (neither at the winery nor at the cellar): the process moves to out-of-stock handling (see below). Only once stock availability is confirmed does the process continue.
+\end{itemize}
 
+The wine stock check is performed \emph{before} the parallel split to ensure that the out-of-stock exception path (which may lead to order modification or cancellation) is fully resolved before any downstream work begins. This avoids a potential AND-join deadlock that would occur if the out-of-stock path were inside a parallel region with the packaging check.
+
+Once wine availability is confirmed, two tasks proceed \textbf{in parallel}:
 \begin{enumerate}[leftmargin=*]
-    \item \textbf{Wine stock check:} The Warehouse Worker checks whether all requested wine types and quantities are available at the winery.
-    \begin{itemize}
-        \item If \textbf{partially or fully unavailable at the winery but available at the wine cellar}: the missing wine must be transported from the cellar to the winery before proceeding.
-        \item If a wine type is \textbf{completely out of stock} (neither at the winery nor at the cellar): the process moves to out-of-stock handling.
-    \end{itemize}
-    \item \textbf{Packaging material check:} The Warehouse Worker checks whether sufficient packaging materials (boxes, padding, etc.) are available. If insufficient, additional materials must be procured (purchased from a local store or ordered online).
+    \item \textbf{Packaging material check:} The Warehouse Worker checks whether sufficient packaging materials (boxes, padding, etc.) are available. If insufficient, additional materials must be procured (purchased from a local store or ordered online). Once materials are available, the Warehouse Worker packages the order.
+    \item \textbf{Invoice generation:} The Sales Manager manually generates and prints the invoice for the order.
 \end{enumerate}
 
-Both checks (and any resulting restocking tasks) must complete before the process can proceed to packaging.
+Both the packaging (including the packaging material check) and the invoice generation must complete before the process can proceed to delivery batching.
 
 \subsubsection{Out-of-Stock Handling}
 
@@ -83,7 +86,7 @@ If any requested wine type is completely unavailable, the Sales Manager informs 
 
 \subsubsection{Order Packaging}
 
-Once all wine and packaging materials are available, the Warehouse Worker packages the order: places the requested wines in the appropriate box and closes it. In parallel, the Sales Manager manually generates and prints the invoice for the order. The printed invoice is included with the package.
+The packaging of the order (placing the requested wines in the appropriate box) happens as part of the packaging material check branch of the parallel region. Once both that branch and the invoice generation branch complete, the printed invoice is included with the package and the order is ready for delivery.
 
 \subsubsection{Delivery Batching}
 
@@ -136,8 +139,9 @@ Pools              & Customer (external), Winery (internal) \\
 Lanes              & Sales Manager, Warehouse Worker, Delivery Driver \\
 Start Event        & Order received \\
 End Events         & Order fulfilled, Order cancelled \\
-Parallel Gateway   & Wine stock check and packaging material check run concurrently; \\
-                   & payment status check runs concurrently with loading and delivery \\
+Parallel Gateway   & Packaging material check and invoice generation run concurrently \\
+                   & (after wine stock is confirmed); payment status check runs \\
+                   & concurrently with loading and delivery \\
 Exclusive Gateways & Stock availability, modify/cancel decision, payment method, \\
                    & delivery batch threshold \\
 Loop               & Customer modifies order $\rightarrow$ returns to order recording \\
@@ -149,36 +153,20 @@ Message Flow       & Communication between Customer pool and Winery pool \\
 
 \subsection{Diagram}
 
-% TODO: include the BPMN diagram as a figure once created
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=\textwidth]{wine_order_fulfillment.png}
-%     \caption{BPMN model of the wine order and fulfillment process.}
-%     \label{fig:bpmn}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{wine_order_fulfillment.png}
+    \caption{BPMN model of the wine order and fulfillment process.}
+    \label{fig:bpmn}
+\end{figure}
 
-\subsection{Known Limitations}
+\subsection{Design Decision: Sequential Wine Check}
 
-The current BPMN model contains a structural issue related to the interaction between the parallel stock/packaging check and the out-of-stock exception path.
+An earlier version of this model placed the wine stock check and the packaging material check inside the same parallel region. This introduced a structural deadlock: if the wine was completely out of stock and the customer cancelled (or modified) the order, the wine branch's token would never reach the parallel join, while the packaging branch's token waited there indefinitely.
 
-\subsubsection{Parallel Join Deadlock on Order Cancellation}
+The current model resolves this by performing the wine stock check \emph{sequentially}, before the parallel split. The out-of-stock exception path (customer notification, modify/cancel decision) is therefore fully resolved before any parallel work begins. Once wine availability is confirmed, the parallel split forks into the packaging material check branch and the invoice generation branch, both of which are guaranteed to complete and converge at the downstream parallel join.
 
-After the order is recorded, a \textbf{parallel gateway} splits the flow into two concurrent branches: the wine stock check and the packaging material check. Both branches must complete and converge at a downstream \textbf{parallel join gateway} before the process can proceed to packaging and invoicing.
-
-However, the wine stock check has a third outcome---\emph{completely out of stock}---which diverts the flow to the Sales Manager lane to notify the customer. If the customer then \textbf{cancels the order}, the process terminates at the ``Order Cancelled'' end event. The packaging material check branch, running independently, completes and delivers its token to the parallel join gateway. Since the wine branch never sends a token to this join in the out-of-stock scenario, the parallel join \textbf{waits indefinitely}---a classic AND-join deadlock. The packaging branch token becomes orphaned.
-
-The problem also manifests when the customer chooses to \textbf{modify the order} instead of cancelling: the flow loops back to ``Record Order,'' which re-enters the parallel split gateway and creates a \emph{new} pair of tokens for both branches. The old packaging branch token, however, remains stuck at the join gateway. Each modification loop iteration accumulates an additional orphan token.
-
-\subsubsection{Possible Resolutions}
-
-Resolving this deadlock would require restructuring the model, for example by:
-\begin{itemize}
-    \item Wrapping the parallel check region in an \textbf{embedded subprocess} with an \textbf{interrupting boundary event} or \textbf{error event} that terminates both branches when stock is unavailable.
-    \item Performing the wine stock check \emph{before} the parallel split, so that the out-of-stock path is handled before the packaging check is ever started.
-    \item Using a \textbf{termination event} or \textbf{cancel event} within a transaction subprocess.
-\end{itemize}
-
-These solutions would add considerable complexity to the diagram. The current model retains the simpler parallel structure as a known trade-off, with this limitation documented here.
+This restructuring eliminates the AND-join deadlock without requiring more complex BPMN constructs such as embedded subprocesses with boundary events or transaction scopes.
 
 \section{Future Considerations}
 
@@ -199,7 +187,11 @@ Several potential improvements and extensions could be explored in a future to-b
 
 \section{Personal Notes}
 
-% TODO: Fill in with personal experiences of completing this homework assignment.
+This was an interesting assignment; I enjoyed working on it. I was surprised by how long it took me to complete it. The freedom provided by the task description initially deceived me into thinking that I could come up with a simple process, quickly model it, and be done with it in a couple of hours at most.
+
+However, as I began modeling based on my initial written process description, I quickly ran into questions that, if not carefully considered, could lead to problems later in the model (e.g., when to check for payment, when to check for various stocks). All in all, with the time it took me to resolve them, I completed this assignment in roughly a day's time.
+
+Additionally, I was surprised by the capabilities of modern agentic LLM systems:they proved to be helpful in reviewing the BPMN model, which is not something that I expected them to be capable of.
 
 \section{Conclusion}
 

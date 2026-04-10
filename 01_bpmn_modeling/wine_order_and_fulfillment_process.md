@@ -30,20 +30,27 @@ The process starts when a customer places an order. Orders can arrive through se
 
 Regardless of the channel, the Sales Manager notices and records the order details (customer name, contact info, wines requested with quantities, delivery address).
 
-### 2. Stock Availability Check
+### 2. Wine Stock Check
 
-Once the order is recorded, two checks are performed in parallel by the Warehouse Worker:
+Once the order is recorded, the Warehouse Worker first checks whether all requested wine types and quantities are available:
+- If **partially or fully unavailable at the winery but available at the wine cellar**: the missing wine must be transported from the cellar to the winery before proceeding.
+- If a wine type is **completely out of stock** (neither at the winery nor at the cellar): the process moves to customer notification (described in section 3). Only once stock availability is confirmed does the process continue.
 
-**a) Wine stock check:**
-- The Warehouse Worker checks whether all requested wine types and quantities are available at the winery.
-- If **partially or fully unavailable at the winery but available at the wine cellar**: the missing wine must be transported from the cellar to the winery before proceeding. This is an additional task that must complete before packaging can begin.
-- If a wine type is **completely out of stock** (neither at the winery nor at the cellar): the process moves to customer notification (described in section 3).
+The wine stock check is performed *before* the parallel split so that the out-of-stock exception path (which may lead to order modification or cancellation) is fully resolved before any downstream work begins.
 
-**b) Packaging material check:**
+### 2b. Parallel: Packaging Check and Invoice Generation
+
+Once wine availability is confirmed, two tasks proceed **in parallel**:
+
+**a) Packaging material check and order packaging:**
 - The Warehouse Worker checks whether sufficient packaging materials (boxes, padding, etc.) are available.
-- If **insufficient**: additional materials must be procured (purchased from a local store or ordered online). This must complete before packaging can begin.
+- If **insufficient**: additional materials must be procured (purchased from a local store or ordered online).
+- Once materials are available, the Warehouse Worker packages the order: places the requested wines in the appropriate box and closes it.
 
-Both checks (and any resulting restocking tasks) must complete before the process can proceed to packaging.
+**b) Invoice generation:**
+- The Sales Manager manually generates and prints the invoice for the order.
+
+Both branches must complete before the process can proceed. The printed invoice is included with the package.
 
 ### 3. Out-of-Stock Handling
 
@@ -53,12 +60,9 @@ If any requested wine type is completely unavailable:
   - **Modify the order** (substitute wines, adjust quantities) — the process loops back to the order recording step with the updated order details.
   - **Cancel the order** — the process ends.
 
-### 4. Order Packaging
+### 4. Delivery Readiness
 
-Once all wine and packaging materials are available:
-- The Warehouse Worker packages the order: places the requested wines in the appropriate box and closes it.
-- The Sales Manager manually generates and prints the invoice for the order.
-- The invoice is included with the package.
+Once both the packaging branch and the invoice generation branch complete (as described in section 2b), the order is ready for delivery.
 
 ### 5. Delivery Batching
 
@@ -100,7 +104,7 @@ After payment is collected (or confirmed as already received), the order is cons
 | **Lanes** | Sales Manager, Warehouse Worker, Delivery Driver |
 | **Start Event** | Order received |
 | **End Events** | Order fulfilled, Order cancelled |
-| **Parallel Gateway** | Wine stock check and packaging material check run concurrently; payment status check runs concurrently with loading and delivery |
+| **Parallel Gateway** | Packaging material check and invoice generation run concurrently (after wine stock confirmed); payment status check runs concurrently with loading and delivery |
 | **Exclusive Gateways** | Stock availability decisions, customer modify/cancel decision, payment method, delivery batch threshold |
 | **Loop** | Customer modifies order → returns to order recording |
 | **Intermediate Event** | Waiting for delivery batch to accumulate |
