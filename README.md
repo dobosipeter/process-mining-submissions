@@ -13,7 +13,10 @@ This repository contains my homework submissions for the Process Modeling and Pr
 
 ### Homework 2 — Process Mining Analysis
 
-- `02_process_mining/`: _(TBD)_
+- `02_process_mining/REPORT.tex`: LaTeX source for the submission report.
+- `02_process_mining/REPORT.pdf`: Compiled submission report.
+- `02_process_mining/src/process_mining_hw/main.py`: Analysis script.
+- `02_process_mining/data/`: BPI Challenge 2020 event logs (domestic + international declarations).
 
 ## Requirements Overview
 

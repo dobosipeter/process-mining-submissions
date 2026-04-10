@@ -1,0 +1,188 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+\title{Process Modeling and Process Mining\\Homework 2 — Process Mining Analysis}
+\author{Peter Dobosi}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Introduction and Goal}
+
+This report presents a process mining analysis of two event logs from the BPI Challenge 2020 dataset, which records the travel expense reimbursement process at Eindhoven University of Technology (TU/e).
+
+The central question driving this analysis is one posed by the challenge organizers themselves:
+
+\begin{quote}
+\textit{Is there a difference in throughput between domestic and international travel declarations?}
+\end{quote}
+
+To answer this, the analysis pursues the following objectives:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Compare throughput} — measure and compare case durations (from submission to payment) between domestic and international declarations, both overall and at each approval step.
+    \item \textbf{Identify bottlenecks} — determine where in the approval workflow the longest delays occur, and whether they differ between the two declaration types.
+    \item \textbf{Discover and compare process models} — apply multiple discovery algorithms to both logs and evaluate the resulting models using conformance checking metrics.
+\end{enumerate}
+
+\section{Dataset Description}
+
+\subsection{Source}
+
+The dataset originates from the \textbf{BPI Challenge 2020}, the tenth International Business Process Intelligence Challenge organized by the IEEE Task Force on Process Mining. The data captures the travel expense reimbursement process at TU/e, covering 2017 (two departments) and 2018 (university-wide). It is publicly available at \url{https://data.4tu.nl/collections/BPI_Challenge_2020/5065541/1}.
+
+\subsection{Process Overview}
+
+At TU/e, domestic and international trips follow different procedures:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Domestic trips:} No prior permission is needed. The employee travels and submits a reimbursement claim afterwards.
+    \item \textbf{International trips:} A travel permit must be approved by the supervisor before making any arrangements. Pre-paid travel costs can be claimed before the trip; the full declaration is submitted after the trip.
+\end{itemize}
+
+Both declaration types follow a similar approval workflow once submitted:
+\begin{enumerate}[leftmargin=*]
+    \item Submission by the employee.
+    \item Approval by travel administration.
+    \item Forwarding to the budget owner.
+    \item Forwarding to the supervisor (skipped if the budget owner and supervisor are the same person).
+    \item Optional director approval.
+    \item Payment request and execution.
+\end{enumerate}
+
+At any approval step, a rejection can occur. The employee may then resubmit or withdraw the request.
+
+\subsection{Event Logs Used}
+
+Two of the five available logs were selected, corresponding to the two declaration types relevant to the throughput comparison:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Log} & \textbf{Cases} & \textbf{Events} & \textbf{Events/Case (avg)} \\
+\midrule
+Domestic Declarations    & 10\,500 & 56\,437  & \textit{TODO} \\
+International Declarations & 6\,449 & 72\,151 & \textit{TODO} \\
+\bottomrule
+\end{tabular}
+\caption{Overview of the two event logs.}
+\label{tab:logs}
+\end{table}
+
+The notably higher events-per-case ratio for international declarations (approximately \textit{TODO} vs.\ \textit{TODO}) already suggests a more complex process with more steps or more rework.
+
+% TODO: After loading the data, fill in:
+% - events/case averages
+% - distinct activities per log
+% - distinct resources per log
+% - timespan per log
+% - column names / attributes available
+
+\section{Data Preparation}
+
+% TODO: After loading the data, document:
+% - Were there lifecycle transitions to filter?
+% - Any missing values or anomalies?
+% - Were any activities excluded or merged?
+% - Any case-level filtering (e.g. by year)?
+% - What formatting was applied (pm4py.format_dataframe)?
+
+\textit{This section will be completed after loading and inspecting the raw event logs.}
+
+\section{Exploratory Analysis}
+
+\subsection{Activity Frequencies}
+
+% TODO: For each log:
+% - Bar chart of activity frequencies
+% - Commentary on the most/least frequent activities
+% - Include figures: output/domestic_activity_frequencies.png, output/international_activity_frequencies.png
+
+\textit{TODO: Activity frequency analysis for both logs.}
+
+\subsection{Case Duration Distribution}
+
+% TODO: For each log:
+% - Histogram of case durations
+% - Mean, median, min, max
+% - Compare the two distributions side by side
+% - Include figures: output/domestic_case_durations.png, output/international_case_durations.png
+
+\textit{TODO: Case duration distributions and comparison.}
+
+\subsection{Process Variants}
+
+% TODO: For each log:
+% - Number of distinct variants
+% - Coverage of top N variants
+% - Include figures: output/domestic_variants.png, output/international_variants.png
+
+\textit{TODO: Variant analysis for both logs.}
+
+\subsection{Throughput Comparison}
+
+This subsection addresses the central question directly.
+
+% TODO:
+% - Compare overall case durations (submission to payment) between domestic and international
+% - Compare per-step durations using the performance DFG
+% - Identify which steps contribute most to the difference
+% - Include figures: output/throughput_comparison.png or similar
+
+\textit{TODO: Direct throughput comparison between domestic and international declarations.}
+
+\section{Process Discovery}
+
+% TODO: For at least one of the logs (or both), run:
+% - DFG (frequency and performance)
+% - Alpha Miner
+% - Heuristic Miner
+% - Inductive Miner
+% Visualize and discuss each model.
+% Include figures for each.
+
+\subsection{Directly-Follows Graph}
+
+\textit{TODO: DFG discovery and visualization.}
+
+\subsection{Alpha Miner}
+
+\textit{TODO: Alpha Miner results.}
+
+\subsection{Heuristic Miner}
+
+\textit{TODO: Heuristic Miner results.}
+
+\subsection{Inductive Miner}
+
+\textit{TODO: Inductive Miner results.}
+
+\section{Conformance Checking and Model Comparison}
+
+% TODO:
+% - Token-based replay: fitness, precision, generalization for each model
+% - Comparison table
+% - Bar chart (output/conformance_comparison.png)
+% - Discussion: which model is best and why
+
+\textit{TODO: Conformance checking results and model comparison.}
+
+\section{Evaluation and Conclusion}
+
+% TODO: Loop back to the three objectives from the introduction:
+% 1. Throughput comparison: what did we find?
+% 2. Bottlenecks: where are they, do they differ?
+% 3. Model comparison: which algorithm worked best?
+% Answer the central question: is there a throughput difference?
+
+\textit{TODO: Final evaluation against stated goals.}
+
+\end{document}
