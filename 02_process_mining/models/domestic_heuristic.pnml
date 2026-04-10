@@ -1,0 +1,381 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pnml>
+  <net id="" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text></text>
+    </name>
+    <page id="n0">
+      <place id="sink0">
+        <name>
+          <text>sink0</text>
+        </name>
+      </place>
+      <place id="intplace_Declaration APPROVED by ADMINISTRATION">
+        <name>
+          <text>intplace_Declaration APPROVED by ADMINISTRATION</text>
+        </name>
+      </place>
+      <place id="intplace_Declaration FINAL_APPROVED by SUPERVISOR">
+        <name>
+          <text>intplace_Declaration FINAL_APPROVED by SUPERVISOR</text>
+        </name>
+      </place>
+      <place id="pre_Declaration FINAL_APPROVED by SUPERVISOR">
+        <name>
+          <text>pre_Declaration FINAL_APPROVED by SUPERVISOR</text>
+        </name>
+      </place>
+      <place id="pre_Declaration REJECTED by SUPERVISOR">
+        <name>
+          <text>pre_Declaration REJECTED by SUPERVISOR</text>
+        </name>
+      </place>
+      <place id="intplace_Declaration APPROVED by BUDGET OWNER">
+        <name>
+          <text>intplace_Declaration APPROVED by BUDGET OWNER</text>
+        </name>
+      </place>
+      <place id="intplace_Declaration REJECTED by ADMINISTRATION">
+        <name>
+          <text>intplace_Declaration REJECTED by ADMINISTRATION</text>
+        </name>
+      </place>
+      <place id="intplace_Declaration SAVED by EMPLOYEE">
+        <name>
+          <text>intplace_Declaration SAVED by EMPLOYEE</text>
+        </name>
+      </place>
+      <place id="intplace_Declaration SUBMITTED by EMPLOYEE">
+        <name>
+          <text>intplace_Declaration SUBMITTED by EMPLOYEE</text>
+        </name>
+      </place>
+      <place id="splace_in_Declaration REJECTED by SUPERVISOR_Declaration APPROVED by ADMINISTRATION">
+        <name>
+          <text>splace_in_Declaration REJECTED by SUPERVISOR_Declaration APPROVED by ADMINISTRATION</text>
+        </name>
+      </place>
+      <place id="pre_Declaration REJECTED by MISSING">
+        <name>
+          <text>pre_Declaration REJECTED by MISSING</text>
+        </name>
+      </place>
+      <place id="pre_Payment Handled">
+        <name>
+          <text>pre_Payment Handled</text>
+        </name>
+      </place>
+      <place id="source0">
+        <name>
+          <text>source0</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <place id="intplace_Declaration REJECTED by MISSING">
+        <name>
+          <text>intplace_Declaration REJECTED by MISSING</text>
+        </name>
+      </place>
+      <place id="pre_Request Payment">
+        <name>
+          <text>pre_Request Payment</text>
+        </name>
+      </place>
+      <place id="pre_Declaration REJECTED by EMPLOYEE">
+        <name>
+          <text>pre_Declaration REJECTED by EMPLOYEE</text>
+        </name>
+      </place>
+      <place id="pre_Declaration SUBMITTED by EMPLOYEE">
+        <name>
+          <text>pre_Declaration SUBMITTED by EMPLOYEE</text>
+        </name>
+      </place>
+      <place id="intplace_Declaration REJECTED by SUPERVISOR">
+        <name>
+          <text>intplace_Declaration REJECTED by SUPERVISOR</text>
+        </name>
+      </place>
+      <place id="intplace_Declaration REJECTED by EMPLOYEE">
+        <name>
+          <text>intplace_Declaration REJECTED by EMPLOYEE</text>
+        </name>
+      </place>
+      <transition id="hid_28">
+        <name>
+          <text>hid_28</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="e48cd6ab-3a0a-4bfc-b7e8-bdd4b4199e6b"/>
+      </transition>
+      <transition id="hid_42">
+        <name>
+          <text>hid_42</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="0ba5337c-e65e-4f68-aeb6-21986339650b"/>
+      </transition>
+      <transition id="Declaration REJECTED by BUDGET OWNER">
+        <name>
+          <text>Declaration REJECTED by BUDGET OWNER</text>
+        </name>
+      </transition>
+      <transition id="Declaration REJECTED by EMPLOYEE">
+        <name>
+          <text>Declaration REJECTED by EMPLOYEE</text>
+        </name>
+      </transition>
+      <transition id="Declaration FOR_APPROVAL by ADMINISTRATION">
+        <name>
+          <text>Declaration FOR_APPROVAL by ADMINISTRATION</text>
+        </name>
+      </transition>
+      <transition id="Declaration FOR_APPROVAL by PRE_APPROVER">
+        <name>
+          <text>Declaration FOR_APPROVAL by PRE_APPROVER</text>
+        </name>
+      </transition>
+      <transition id="hid_4">
+        <name>
+          <text>hid_4</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="a8a1ee63-f58f-4c49-9558-9f9915ec8b00"/>
+      </transition>
+      <transition id="hid_18">
+        <name>
+          <text>hid_18</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="c4a26cde-6627-462d-9e3f-58d7af5266e8"/>
+      </transition>
+      <transition id="hid_25">
+        <name>
+          <text>hid_25</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="75a6dbed-bc6d-4990-ab9d-bad56dded34c"/>
+      </transition>
+      <transition id="hid_32">
+        <name>
+          <text>hid_32</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="c0dc38ea-104e-4cfd-be1b-204e0ca037bc"/>
+      </transition>
+      <transition id="hid_44">
+        <name>
+          <text>hid_44</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="87a263ef-5e85-4057-8639-78d7b7fdb2f7"/>
+      </transition>
+      <transition id="hid_29">
+        <name>
+          <text>hid_29</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="78e9d732-50de-4ffa-bd91-8b909ed96a81"/>
+      </transition>
+      <transition id="hid_43">
+        <name>
+          <text>hid_43</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="7e54208c-2e72-4151-a076-3e27b57cf3c9"/>
+      </transition>
+      <transition id="Declaration FOR_APPROVAL by SUPERVISOR">
+        <name>
+          <text>Declaration FOR_APPROVAL by SUPERVISOR</text>
+        </name>
+      </transition>
+      <transition id="Declaration APPROVED by ADMINISTRATION">
+        <name>
+          <text>Declaration APPROVED by ADMINISTRATION</text>
+        </name>
+      </transition>
+      <transition id="Declaration REJECTED by SUPERVISOR">
+        <name>
+          <text>Declaration REJECTED by SUPERVISOR</text>
+        </name>
+      </transition>
+      <transition id="Declaration APPROVED by PRE_APPROVER">
+        <name>
+          <text>Declaration APPROVED by PRE_APPROVER</text>
+        </name>
+      </transition>
+      <transition id="Declaration SAVED by EMPLOYEE">
+        <name>
+          <text>Declaration SAVED by EMPLOYEE</text>
+        </name>
+      </transition>
+      <transition id="hid_45">
+        <name>
+          <text>hid_45</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="d39b6ffa-dbef-42b6-9c15-f67ca1ea3214"/>
+      </transition>
+      <transition id="hid_30">
+        <name>
+          <text>hid_30</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="dd8e4f9e-ae26-4163-8e2a-016f36cf26c9"/>
+      </transition>
+      <transition id="Declaration REJECTED by ADMINISTRATION">
+        <name>
+          <text>Declaration REJECTED by ADMINISTRATION</text>
+        </name>
+      </transition>
+      <transition id="Declaration REJECTED by MISSING">
+        <name>
+          <text>Declaration REJECTED by MISSING</text>
+        </name>
+      </transition>
+      <transition id="Declaration SUBMITTED by EMPLOYEE">
+        <name>
+          <text>Declaration SUBMITTED by EMPLOYEE</text>
+        </name>
+      </transition>
+      <transition id="hid_5">
+        <name>
+          <text>hid_5</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="21e870cc-885f-47f6-8516-af67ee5bc14b"/>
+      </transition>
+      <transition id="hid_22">
+        <name>
+          <text>hid_22</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="393ba201-5360-4238-b7a5-e5a3cd0cd322"/>
+      </transition>
+      <transition id="hid_26">
+        <name>
+          <text>hid_26</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="3892156e-b203-4919-968a-c98b4d7ca6e6"/>
+      </transition>
+      <transition id="Declaration APPROVED by BUDGET OWNER">
+        <name>
+          <text>Declaration APPROVED by BUDGET OWNER</text>
+        </name>
+      </transition>
+      <transition id="hid_31">
+        <name>
+          <text>hid_31</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="b58564f2-27c4-42df-bb82-bf19039b6938"/>
+      </transition>
+      <transition id="Declaration REJECTED by PRE_APPROVER">
+        <name>
+          <text>Declaration REJECTED by PRE_APPROVER</text>
+        </name>
+      </transition>
+      <transition id="Declaration FINAL_APPROVED by SUPERVISOR">
+        <name>
+          <text>Declaration FINAL_APPROVED by SUPERVISOR</text>
+        </name>
+      </transition>
+      <transition id="Request Payment">
+        <name>
+          <text>Request Payment</text>
+        </name>
+      </transition>
+      <transition id="Payment Handled">
+        <name>
+          <text>Payment Handled</text>
+        </name>
+      </transition>
+      <transition id="hid_1">
+        <name>
+          <text>hid_1</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="1ca9c36f-9f78-460b-b0d5-4aca810b6495"/>
+      </transition>
+      <transition id="hid_23">
+        <name>
+          <text>hid_23</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="067835c4-aeb6-46f6-a379-31998bd5c6e2"/>
+      </transition>
+      <transition id="hid_27">
+        <name>
+          <text>hid_27</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="b633dc92-0b16-43dd-820c-7d917fdbc214"/>
+      </transition>
+      <arc id="140569531475456" source="pre_Request Payment" target="Request Payment"/>
+      <arc id="140569531152384" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="Declaration REJECTED by ADMINISTRATION"/>
+      <arc id="140569531142160" source="intplace_Declaration REJECTED by SUPERVISOR" target="hid_27"/>
+      <arc id="140569531151376" source="Declaration FOR_APPROVAL by SUPERVISOR" target="pre_Declaration REJECTED by MISSING"/>
+      <arc id="140569531141152" source="intplace_Declaration FINAL_APPROVED by SUPERVISOR" target="hid_25"/>
+      <arc id="140569531150368" source="Declaration REJECTED by BUDGET OWNER" target="pre_Declaration REJECTED by EMPLOYEE"/>
+      <arc id="140569531140144" source="Declaration APPROVED by BUDGET OWNER" target="intplace_Declaration APPROVED by BUDGET OWNER"/>
+      <arc id="140569531472432" source="hid_4" target="pre_Declaration REJECTED by SUPERVISOR"/>
+      <arc id="140569531149360" source="Declaration SAVED by EMPLOYEE" target="intplace_Declaration SAVED by EMPLOYEE"/>
+      <arc id="140569531152960" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="Declaration FOR_APPROVAL by PRE_APPROVER"/>
+      <arc id="140569531148352" source="intplace_Declaration REJECTED by ADMINISTRATION" target="hid_42"/>
+      <arc id="140569531151952" source="hid_29" target="pre_Declaration SUBMITTED by EMPLOYEE"/>
+      <arc id="140569531150944" source="Declaration REJECTED by PRE_APPROVER" target="pre_Declaration REJECTED by EMPLOYEE"/>
+      <arc id="140569531149936" source="hid_45" target="sink0"/>
+      <arc id="140569531476608" source="pre_Declaration REJECTED by EMPLOYEE" target="Declaration REJECTED by EMPLOYEE"/>
+      <arc id="140569531139712" source="intplace_Declaration APPROVED by ADMINISTRATION" target="hid_22"/>
+      <arc id="140569531144320" source="intplace_Declaration REJECTED by EMPLOYEE" target="hid_32"/>
+      <arc id="140569531153536" source="intplace_Declaration APPROVED by ADMINISTRATION" target="Declaration APPROVED by BUDGET OWNER"/>
+      <arc id="140569531138704" source="Declaration APPROVED by ADMINISTRATION" target="intplace_Declaration APPROVED by ADMINISTRATION"/>
+      <arc id="140569531143312" source="intplace_Declaration REJECTED by MISSING" target="hid_30"/>
+      <arc id="140569531152528" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="Declaration FOR_APPROVAL by ADMINISTRATION"/>
+      <arc id="140569531469984" source="pre_Declaration FINAL_APPROVED by SUPERVISOR" target="Declaration FINAL_APPROVED by SUPERVISOR"/>
+      <arc id="140569531151520" source="hid_27" target="pre_Declaration REJECTED by EMPLOYEE"/>
+      <arc id="140569531150512" source="hid_23" target="pre_Declaration FINAL_APPROVED by SUPERVISOR"/>
+      <arc id="140569531140288" source="intplace_Declaration APPROVED by BUDGET OWNER" target="hid_23"/>
+      <arc id="140569531144896" source="Declaration SUBMITTED by EMPLOYEE" target="intplace_Declaration SUBMITTED by EMPLOYEE"/>
+      <arc id="140569531149504" source="intplace_Declaration SAVED by EMPLOYEE" target="hid_44"/>
+      <arc id="140569531480784" source="pre_Payment Handled" target="Payment Handled"/>
+      <arc id="140569531143888" source="Declaration REJECTED by EMPLOYEE" target="intplace_Declaration REJECTED by EMPLOYEE"/>
+      <arc id="140569531153104" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="Declaration APPROVED by PRE_APPROVER"/>
+      <arc id="140569531152096" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="hid_1"/>
+      <arc id="140569531142880" source="Declaration REJECTED by MISSING" target="intplace_Declaration REJECTED by MISSING"/>
+      <arc id="140569531151088" source="Declaration FOR_APPROVAL by ADMINISTRATION" target="pre_Declaration SUBMITTED by EMPLOYEE"/>
+      <arc id="140569531473152" source="hid_5" target="pre_Declaration REJECTED by SUPERVISOR"/>
+      <arc id="140569531150080" source="hid_25" target="pre_Declaration REJECTED by MISSING"/>
+      <arc id="140569531139856" source="hid_22" target="splace_in_Declaration REJECTED by SUPERVISOR_Declaration APPROVED by ADMINISTRATION"/>
+      <arc id="140569531144464" source="hid_32" target="sink0"/>
+      <arc id="140569531153680" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="Declaration FOR_APPROVAL by SUPERVISOR"/>
+      <arc id="140569531152672" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="Declaration APPROVED by ADMINISTRATION"/>
+      <arc id="140569531480352" source="source0" target="hid_18"/>
+      <arc id="140569531143456" source="hid_30" target="sink0"/>
+      <arc id="140569531470128" source="hid_1" target="pre_Declaration FINAL_APPROVED by SUPERVISOR"/>
+      <arc id="140569531151664" source="hid_31" target="pre_Declaration SUBMITTED by EMPLOYEE"/>
+      <arc id="140569531142448" source="intplace_Declaration REJECTED by SUPERVISOR" target="hid_28"/>
+      <arc id="140569531141440" source="intplace_Declaration FINAL_APPROVED by SUPERVISOR" target="hid_26"/>
+      <arc id="140569531150656" source="Declaration FOR_APPROVAL by PRE_APPROVER" target="pre_Declaration REJECTED by MISSING"/>
+      <arc id="140569531472720" source="splace_in_Declaration REJECTED by SUPERVISOR_Declaration APPROVED by ADMINISTRATION" target="hid_4"/>
+      <arc id="140569531153248" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="hid_5"/>
+      <arc id="140569531144032" source="intplace_Declaration REJECTED by EMPLOYEE" target="hid_31"/>
+      <arc id="140569531148640" source="intplace_Declaration REJECTED by ADMINISTRATION" target="hid_43"/>
+      <arc id="140569531138416" source="source0" target="Declaration SAVED by EMPLOYEE"/>
+      <arc id="140569531143024" source="intplace_Declaration REJECTED by MISSING" target="hid_29"/>
+      <arc id="140569531147632" source="Payment Handled" target="sink0"/>
+      <arc id="140569531152240" source="intplace_Declaration APPROVED by ADMINISTRATION" target="hid_1"/>
+      <arc id="140569531151232" source="Declaration APPROVED by PRE_APPROVER" target="pre_Declaration FINAL_APPROVED by SUPERVISOR"/>
+      <arc id="140569531478912" source="pre_Declaration SUBMITTED by EMPLOYEE" target="Declaration SUBMITTED by EMPLOYEE"/>
+      <arc id="140569531142016" source="Declaration REJECTED by SUPERVISOR" target="intplace_Declaration REJECTED by SUPERVISOR"/>
+      <arc id="140569531473296" source="splace_in_Declaration REJECTED by SUPERVISOR_Declaration APPROVED by ADMINISTRATION" target="hid_5"/>
+      <arc id="140569531141008" source="Declaration FINAL_APPROVED by SUPERVISOR" target="intplace_Declaration FINAL_APPROVED by SUPERVISOR"/>
+      <arc id="140569531150224" source="hid_26" target="pre_Request Payment"/>
+      <arc id="140569531472288" source="pre_Declaration REJECTED by SUPERVISOR" target="Declaration REJECTED by SUPERVISOR"/>
+      <arc id="140569531153824" source="intplace_Declaration APPROVED by ADMINISTRATION" target="Declaration REJECTED by BUDGET OWNER"/>
+      <arc id="140569531152816" source="intplace_Declaration SUBMITTED by EMPLOYEE" target="Declaration REJECTED by PRE_APPROVER"/>
+      <arc id="140569531480496" source="hid_18" target="pre_Declaration SUBMITTED by EMPLOYEE"/>
+      <arc id="140569531143600" source="Request Payment" target="pre_Payment Handled"/>
+      <arc id="140569531148208" source="Declaration REJECTED by ADMINISTRATION" target="intplace_Declaration REJECTED by ADMINISTRATION"/>
+      <arc id="140569531142592" source="hid_28" target="sink0"/>
+      <arc id="140569531151808" source="hid_42" target="pre_Declaration REJECTED by EMPLOYEE"/>
+      <arc id="140569531473872" source="pre_Declaration REJECTED by MISSING" target="Declaration REJECTED by MISSING"/>
+      <arc id="140569531150800" source="hid_44" target="pre_Request Payment"/>
+      <arc id="140569531149792" source="intplace_Declaration SAVED by EMPLOYEE" target="hid_45"/>
+      <arc id="140569531153392" source="intplace_Declaration APPROVED by BUDGET OWNER" target="hid_4"/>
+      <arc id="140569531148784" source="hid_43" target="sink0"/>
+    </page>
+    <finalmarkings>
+      <marking>
+        <place idref="sink0">
+          <text>1</text>
+        </place>
+      </marking>
+    </finalmarkings>
+  </net>
+</pnml>

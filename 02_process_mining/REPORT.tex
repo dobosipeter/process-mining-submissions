@@ -26,6 +26,8 @@ The central question driving this analysis is one posed by the challenge organiz
 \textit{Is there a difference in throughput between domestic and international travel declarations?}
 \end{quote}
 
+This question resonated with my own experience: through my employment, I have first-hand familiarity with the bureaucracy surrounding international travel administration — the permit approvals, budget owner sign-offs, and multi-step authorization chains — and how much more involved it is compared to domestic travel, which in practice proceeds almost automatically. This motivated me to investigate whether the data confirms that intuition quantitatively.
+
 To answer this, the analysis pursues the following objectives:
 \begin{enumerate}[leftmargin=*]
     \item \textbf{Compare throughput} — measure and compare case durations (from submission to payment) between domestic and international declarations, both overall and at each approval step.
@@ -65,124 +67,426 @@ Two of the five available logs were selected, corresponding to the two declarati
 
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}lrrr@{}}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-\textbf{Log} & \textbf{Cases} & \textbf{Events} & \textbf{Events/Case (avg)} \\
+\textbf{Log} & \textbf{Cases} & \textbf{Events} & \textbf{Evt/Case} & \textbf{Activities} & \textbf{Timespan} \\
 \midrule
-Domestic Declarations    & 10\,500 & 56\,437  & \textit{TODO} \\
-International Declarations & 6\,449 & 72\,151 & \textit{TODO} \\
+Domestic Declarations    & 10\,500 & 56\,437  & 5.4 & 17 & Jan 2017 -- Jun 2019 \\
+International Declarations & 6\,449 & 72\,151 & 11.2 & 34 & Oct 2016 -- May 2020 \\
 \bottomrule
 \end{tabular}
 \caption{Overview of the two event logs.}
 \label{tab:logs}
 \end{table}
 
-The notably higher events-per-case ratio for international declarations (approximately \textit{TODO} vs.\ \textit{TODO}) already suggests a more complex process with more steps or more rework.
+The notably higher events-per-case ratio for international declarations (11.2 vs.\ 5.4) already suggests a more complex process with more steps or more rework. The international log contains nearly double the number of distinct activities (34 vs.\ 17) because it includes the travel permit approval workflow (e.g.\ \texttt{Permit SUBMITTED by EMPLOYEE}, \texttt{Permit APPROVED by ADMINISTRATION}) as well as trip lifecycle events (\texttt{Start trip}, \texttt{End trip}) and reminders.
 
-% TODO: After loading the data, fill in:
-% - events/case averages
-% - distinct activities per log
-% - distinct resources per log
-% - timespan per log
-% - column names / attributes available
+Both logs record only two resource identifiers: \texttt{STAFF MEMBER} and \texttt{SYSTEM}. However, the functional role of each actor is captured in the \texttt{org:role} attribute (e.g.\ \texttt{EMPLOYEE}, \texttt{ADMINISTRATION}, \texttt{BUDGET OWNER}, \texttt{SUPERVISOR}).
+
+Each event carries the following key attributes:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{concept:name} — the activity label.
+    \item \texttt{time:timestamp} — the timestamp of the event.
+    \item \texttt{org:role} — the functional role of the actor (e.g.\ EMPLOYEE, SUPERVISOR).
+    \item \texttt{case:Amount} — the declared amount (anonymized but proportionally preserved).
+    \item \texttt{case:BudgetNumber} — the budget line charged.
+\end{itemize}
+The international log additionally includes permit-related case attributes such as \texttt{case:Permit\-RequestedBudget} and \texttt{case:Permit\-OrganizationalEntity}.
 
 \section{Data Preparation}
 
-% TODO: After loading the data, document:
-% - Were there lifecycle transitions to filter?
-% - Any missing values or anomalies?
-% - Were any activities excluded or merged?
-% - Any case-level filtering (e.g. by year)?
-% - What formatting was applied (pm4py.format_dataframe)?
+The BPI 2020 declaration logs do not include a \texttt{lifecycle:transition} attribute. Each event already represents a single completed action, so no lifecycle filtering is necessary.
 
-\textit{This section will be completed after loading and inspecting the raw event logs.}
+Both logs were inspected for missing values — none were found in any column.
+
+No activities were excluded or merged. The international log's permit and trip events (\texttt{Permit SUBMITTED}, \texttt{Start trip}, etc.) are kept in the analysis because they are part of the actual process that an international declaration goes through. Removing them would mask the true complexity difference between the two declaration types.
+
+The only preparation step applied was formatting via \texttt{pm4py.format\_dataframe()} to map the standard XES attribute names (\texttt{case:concept:name}, \texttt{concept:name}, \texttt{time:timestamp}) to pm4py's expected column identifiers.
+
+It is worth noting that this dataset is remarkably clean — no missing values, no ambiguous lifecycle transitions, and well-structured activity labels. This is characteristic of a curated challenge dataset. Real-world event logs would typically require more extensive preparation: handling missing or inconsistent timestamps, resolving duplicate events, dealing with incomplete cases, mapping free-text activity names to a consistent vocabulary, and filtering out noise from system-generated events.
 
 \section{Exploratory Analysis}
 
 \subsection{Activity Frequencies}
 
-% TODO: For each log:
-% - Bar chart of activity frequencies
-% - Commentary on the most/least frequent activities
-% - Include figures: output/domestic_activity_frequencies.png, output/international_activity_frequencies.png
+Figures~\ref{fig:dom_act} and~\ref{fig:intl_act} show the activity frequencies for each log.
 
-\textit{TODO: Activity frequency analysis for both logs.}
+In the domestic log, the process is straightforward: \texttt{Declaration SUBMITTED by EMPLOYEE} (11\,531 occurrences) is followed by administration approval, supervisor final approval, and payment. The numbers decrease at each step, reflecting cases that are rejected or withdrawn along the way. Notably, \texttt{Declaration APPROVED by BUDGET OWNER} appears in only 2\,820 cases — confirming that the budget owner step is skipped when the budget owner and supervisor are the same person.
+
+The international log shows a richer picture: in addition to the declaration approval chain, it contains the full permit workflow (\texttt{Permit SUBMITTED}, \texttt{Permit APPROVED by ADMINISTRATION}, etc.), trip lifecycle markers (\texttt{Start trip} and \texttt{End trip}, each appearing 6\,449 times — once per case), and \texttt{Send Reminder} events.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/domestic_activity_frequencies.png}
+    \caption{Activity frequencies — Domestic Declarations.}
+    \label{fig:dom_act}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/international_activity_frequencies.png}
+    \caption{Activity frequencies — International Declarations.}
+    \label{fig:intl_act}
+\end{figure}
 
 \subsection{Case Duration Distribution}
 
-% TODO: For each log:
-% - Histogram of case durations
-% - Mean, median, min, max
-% - Compare the two distributions side by side
-% - Include figures: output/domestic_case_durations.png, output/international_case_durations.png
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Statistic} & \textbf{Domestic (days)} & \textbf{International (days)} \\
+\midrule
+Mean   & 11.5  & 86.5 \\
+Median &  7.3  & 66.0 \\
+Min    &  0.0  &  6.7 \\
+Max    & 469.2 & 742.0 \\
+\bottomrule
+\end{tabular}
+\caption{Case duration statistics for both declaration types.}
+\label{tab:durations}
+\end{table}
 
-\textit{TODO: Case duration distributions and comparison.}
+The difference is substantial: international declarations take roughly 7--9 times longer than domestic ones. The domestic median of 7.3 days indicates that most domestic claims are resolved within about a week. International declarations have a median of 66 days, which aligns with the process structure — the declaration can only be submitted after the trip ends, and the trip itself is preceded by a permit approval phase.
+
+The domestic log includes cases with zero duration (same-day resolution) while the international log's minimum is 6.7 days, reflecting the inherent multi-step nature of international travel.
+
+It is important to note that the case duration for international declarations does not measure administrative processing time alone — it also includes the trip itself. International trips tend to be longer than domestic ones (people do not travel far for short stays), and the declaration can only be submitted after the trip ends. The full timeline is therefore: permit approval $\rightarrow$ trip duration $\rightarrow$ post-trip declaration submission $\rightarrow$ declaration approval $\rightarrow$ payment. Domestic cases skip the permit phase and the trip wait entirely, which accounts for a large portion of the observed throughput difference.
+
+Figures~\ref{fig:dom_dur} and~\ref{fig:intl_dur} show the full distributions.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{output/domestic_case_durations.png}
+    \caption{Case duration distribution — Domestic Declarations.}
+    \label{fig:dom_dur}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{output/international_case_durations.png}
+    \caption{Case duration distribution — International Declarations.}
+    \label{fig:intl_dur}
+\end{figure}
 
 \subsection{Process Variants}
 
-% TODO: For each log:
-% - Number of distinct variants
-% - Coverage of top N variants
-% - Include figures: output/domestic_variants.png, output/international_variants.png
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Metric} & \textbf{Domestic} & \textbf{International} \\
+\midrule
+Total variants    & 99   & 753 \\
+Top 5 coverage    & 89.6\% & 45.3\% \\
+Most frequent variant & 4\,618 cases & 1\,369 cases \\
+\bottomrule
+\end{tabular}
+\caption{Variant analysis summary.}
+\label{tab:variants}
+\end{table}
 
-\textit{TODO: Variant analysis for both logs.}
+The domestic process is highly standardized: only 99 distinct execution paths exist, and the top 5 variants account for nearly 90\% of all cases. This reflects a simple, well-defined approval chain with few deviations.
+
+The international process is far more varied: 753 distinct paths cover the 6\,449 cases, with the top 5 covering less than half. The additional complexity stems from the permit workflow, the trip lifecycle, optional approval steps (director, pre-approver), and higher rejection/resubmission rates.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{output/domestic_variants.png}
+    \caption{Top 15 process variants — Domestic Declarations.}
+    \label{fig:dom_var}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{output/international_variants.png}
+    \caption{Top 15 process variants — International Declarations.}
+    \label{fig:intl_var}
+\end{figure}
 
 \subsection{Throughput Comparison}
 
-This subsection addresses the central question directly.
+This subsection addresses the central question directly by visualizing the case duration distributions side by side.
 
-% TODO:
-% - Compare overall case durations (submission to payment) between domestic and international
-% - Compare per-step durations using the performance DFG
-% - Identify which steps contribute most to the difference
-% - Include figures: output/throughput_comparison.png or similar
+Figure~\ref{fig:throughput_hist} shows overlapping histograms of the two distributions. The domestic cases are concentrated near zero (most resolved within two weeks), while international cases are spread across a much wider range (30--200 days being typical). The distributions barely overlap, indicating a clear and consistent throughput difference rather than a statistical artifact.
 
-\textit{TODO: Direct throughput comparison between domestic and international declarations.}
+Figure~\ref{fig:throughput_box} presents the same data as boxplots (outliers hidden). The domestic interquartile range spans roughly 3--13 days, while the international IQR spans approximately 38--105 days. Even the 75th percentile of domestic cases (about 13 days) falls well below the 25th percentile of international cases (about 38 days), confirming that the two populations are almost entirely separated in terms of throughput.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{output/throughput_comparison.png}
+    \caption{Overlapping histograms of case durations for domestic and international declarations.}
+    \label{fig:throughput_hist}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{output/throughput_boxplot.png}
+    \caption{Side-by-side boxplot comparison of case durations (outliers hidden).}
+    \label{fig:throughput_box}
+\end{figure}
+
+\subsection{Duration Decomposition}
+
+As noted in Section~4.2, the international case duration includes the trip itself. Since the international log contains \texttt{Start trip} and \texttt{End trip} events for every case, the total duration can be decomposed into three phases: pre-trip administration (permit approval), the trip itself, and post-trip administration (declaration approval and payment).
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Phase} & \textbf{Mean (days)} & \textbf{Median (days)} \\
+\midrule
+Pre-trip admin (permit approval)        & 47.0 & 26.4 \\
+Trip duration                           & 10.6 &  4.0 \\
+Post-trip admin (declaration $\rightarrow$ payment) & 28.8 & 19.7 \\
+\midrule
+Total                                   & 86.5 & 66.0 \\
+\bottomrule
+\end{tabular}
+\caption{International declaration duration decomposition. Note: the median column does not sum to the Total because the median of a sum is not equal to the sum of medians.}
+\label{tab:decomp}
+\end{table}
+
+Figure~\ref{fig:decomp} visualizes this breakdown. The trip itself accounts for only a small fraction of the total time (median 4 days out of 66). The dominant contributor is the pre-trip permit approval phase (median 26.4 days), followed by the post-trip declaration approval (median 19.7 days). The administrative overhead — not the travel itself — is the primary driver of the throughput difference.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{output/international_decomposition.png}
+    \caption{Stacked bar chart of international declaration duration decomposition.}
+    \label{fig:decomp}
+\end{figure}
+
+A small degree of overlap exists between the phases: in 10.3\% of cases (665 out of 6\,449), administrative events occur during the trip — most commonly permit final approvals or declaration submissions. This parallelism means the three phases are not perfectly sequential, but since it affects only a minority of cases, the decomposition remains a useful approximation.
+
+To confirm that the throughput difference is not simply an artifact of trip duration, Figure~\ref{fig:admin_only} compares the \emph{total} domestic case duration against the international \emph{administrative-only} duration (pre-trip + post-trip, excluding the trip itself). Even after removing the trip, the international administrative burden (median 58.3 days) is roughly 8 times longer than the entire domestic process (median 7.3 days). The additional permit approval steps, multi-level authorization chains, and higher rejection/resubmission rates all contribute to this disparity.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{output/admin_only_comparison.png}
+    \caption{Domestic total duration vs.\ international admin-only duration (outliers hidden).}
+
+The performance DFGs allow us to identify the specific steps where delays concentrate. For the domestic process, the main-flow transitions each take 1--4 days on average: submission to administration approval (1.2 days), administration to supervisor final approval (1.9 days), supervisor approval to payment request (3.2 days), and payment request to payment handled (3.6 days). The slowest frequent transition is rejection by administration (5.7 days average), reflecting the time employees take to resubmit corrected declarations.
+
+For the international process, the bottleneck is the pre-trip waiting period: the transition from permit final approval by supervisor to trip start averages 39.3 days across 4\,206 cases --- this is not processing time but the gap between receiving travel authorization and actually traveling. After the trip, the transition from trip end to declaration submission averages 12.7 days (across 4\,591 cases), representing the employee delay in filing their claim. The trip itself averages 5.2 days. These per-step timings confirm that the throughput difference is driven by structural process differences (the permit requirement and the trip lifecycle), not by slower administrative processing at individual approval steps.
+    \label{fig:admin_only}
+
+The performance DFGs allow us to identify the specific steps where delays concentrate. For the domestic process, the main-flow transitions each take 1--4 days on average: submission to administration approval (1.2 days), administration to supervisor final approval (1.9 days), supervisor approval to payment request (3.2 days), and payment request to payment handled (3.6 days). The slowest frequent transition is rejection by administration (5.7 days average), reflecting the time employees take to resubmit corrected declarations.
+
+For the international process, the bottleneck is the pre-trip waiting period: the transition from permit final approval by supervisor to trip start averages 39.3 days across 4\,206 cases --- this is not processing time but the gap between receiving travel authorization and actually traveling. After the trip, the transition from trip end to declaration submission averages 12.7 days (across 4\,591 cases), representing the employee delay in filing their claim. The trip itself averages 5.2 days. These per-step timings confirm that the throughput difference is driven by structural process differences (the permit requirement and the trip lifecycle), not by slower administrative processing at individual approval steps.
+\end{figure}
+
+The performance DFGs allow us to identify the specific steps where delays concentrate. For the domestic process, the main-flow transitions each take 1--4 days on average: submission to administration approval (1.2 days), administration to supervisor final approval (1.9 days), supervisor approval to payment request (3.2 days), and payment request to payment handled (3.6 days). The slowest frequent transition is rejection by administration (5.7 days average), reflecting the time employees take to resubmit corrected declarations.
+
+For the international process, the bottleneck is the pre-trip waiting period: the transition from permit final approval by supervisor to trip start averages 39.3 days across 4\,206 cases --- this is not processing time but the gap between receiving travel authorization and actually traveling. After the trip, the transition from trip end to declaration submission averages 12.7 days (across 4\,591 cases), representing the employee delay in filing their claim. The trip itself averages 5.2 days. These per-step timings confirm that the throughput difference is driven by structural process differences (the permit requirement and the trip lifecycle), not by slower administrative processing at individual approval steps.
 
 \section{Process Discovery}
 
-% TODO: For at least one of the logs (or both), run:
-% - DFG (frequency and performance)
-% - Alpha Miner
-% - Heuristic Miner
-% - Inductive Miner
-% Visualize and discuss each model.
-% Include figures for each.
+Three discovery algorithms were selected to cover a range of approaches and trade-offs:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Alpha Miner} — included as the foundational baseline algorithm to illustrate its limitations on real-world data.
+    \item \textbf{Heuristic Miner} — chosen for its ability to handle noise and infrequent behavior via frequency thresholds, making it better suited to real-world logs.
+    \item \textbf{Inductive Miner} — chosen for its soundness guarantees (deadlock-free models) and its ability to produce multiple representations (Petri net, process tree, BPMN).
+\end{itemize}
+Additionally, Directly-Follows Graphs (DFGs) are used as a lightweight exploratory visualization before applying the formal discovery algorithms.
 
 \subsection{Directly-Follows Graph}
 
-\textit{TODO: DFG discovery and visualization.}
+As a first step in process discovery, Directly-Follows Graphs (DFGs) were constructed for both logs. A DFG connects each pair of activities that directly follow each other in at least one case, annotated with either transition frequencies or average elapsed times.
+
+The domestic DFG (Figures~\ref{fig:dom_dfg_freq} and~\ref{fig:dom_dfg_perf}) is compact and readable, reflecting the simple approval chain. The performance-annotated version reveals where the longest waits occur in the domestic process.
+
+The international DFGs (Figures~\ref{fig:intl_dfg_freq} and~\ref{fig:intl_dfg_perf}) are significantly more complex — with 34 activities and many cross-connections, the graphs become difficult to interpret visually. This ``spaghetti'' effect is a well-known limitation of DFGs on complex processes and motivates the use of more sophisticated discovery algorithms that can abstract away infrequent behavior.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/domestic_dfg_frequency.png}
+    \caption{Domestic DFG — frequency-annotated.}
+    \label{fig:dom_dfg_freq}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/domestic_dfg_performance.png}
+    \caption{Domestic DFG — performance-annotated (edge labels show average time between activities).}
+    \label{fig:dom_dfg_perf}
+\end{figure}
+
+A caveat when interpreting performance DFGs: each edge label represents the average time over only those cases where that specific direct transition occurs. Edges that are traversed by only a few cases can show misleadingly high averages if those cases happen to be outliers. For example, the domestic DFG shows a long average duration between \texttt{Declaration FINAL\_APPROVED by SUPERVISOR} and \texttt{Payment Handled}, even though the median domestic case duration is only 7.3 days. This is because most cases go through \texttt{Request Payment} between those two activities; the few that take the direct path are exceptional long-running cases that inflate the edge average.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/international_dfg_frequency.png}
+    \caption{International DFG — frequency-annotated.}
+    \label{fig:intl_dfg_freq}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/international_dfg_performance.png}
+    \caption{International DFG — performance-annotated. The high number of activities and transitions produces a ``spaghetti'' model that is difficult to interpret.}
+    \label{fig:intl_dfg_perf}
+\end{figure}
 
 \subsection{Alpha Miner}
 
-\textit{TODO: Alpha Miner results.}
+The Alpha Miner is included as a baseline. It discovers a Petri net by analyzing the ordering relations (causality, parallelism, choice) between activities directly from the log. It is the foundational process discovery algorithm, but it assumes a clean, noise-free log and cannot handle short loops, invisible tasks, or infrequent behavior.
+
+Figure~\ref{fig:dom_alpha} shows the domestic Petri net. While the main approval chain is visible, the model is already cluttered by the rejection and resubmission paths. Figure~\ref{fig:intl_alpha} shows the international result — with 34 activities, the Alpha Miner produces a model that is effectively unreadable, reflecting its inability to abstract away noise and infrequent paths.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/domestic_alpha_petri_net.png}
+    \caption{Petri net discovered by the Alpha Miner — Domestic.}
+    \label{fig:dom_alpha}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/international_alpha_petri_net.png}
+    \caption{Petri net discovered by the Alpha Miner — International.}
+    \label{fig:intl_alpha}
+\end{figure}
 
 \subsection{Heuristic Miner}
 
-\textit{TODO: Heuristic Miner results.}
+The Heuristic Miner extends the Alpha Miner's approach by applying frequency thresholds: only activity relations that appear sufficiently often are included in the model, filtering out noise and infrequent behavior. This makes it more suitable for real-world logs where not every observed transition is meaningful.
+
+Figure~\ref{fig:dom_heuristic} shows a visibly cleaner domestic model compared to the Alpha Miner's output — the main approval chain (submission $\rightarrow$ administration $\rightarrow$ budget owner $\rightarrow$ supervisor $\rightarrow$ payment) is clearly identifiable, with rejection paths branching off at each step. The international model (Figure~\ref{fig:intl_heuristic}) is still complex due to the inherent process complexity (34 activities), but shows more structure than the Alpha Miner's version, with the permit and declaration sub-workflows more distinguishable.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/domestic_heuristic_petri_net.png}
+    \caption{Petri net discovered by the Heuristic Miner — Domestic.}
+    \label{fig:dom_heuristic}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/international_heuristic_petri_net.png}
+    \caption{Petri net discovered by the Heuristic Miner — International.}
+    \label{fig:intl_heuristic}
+\end{figure}
 
 \subsection{Inductive Miner}
 
-\textit{TODO: Inductive Miner results.}
+The Inductive Miner uses a divide-and-conquer strategy: it recursively partitions the log into sublogs and identifies the process operator (sequence, parallel, choice, loop) that best explains each partition. This guarantees a \emph{sound} model — one that is free of deadlocks — and typically achieves high fitness. The trade-off is that the model may be overly permissive (low precision), allowing behavior that was never observed, in order to maintain soundness.
+
+The filled black rectangles visible in the Petri net figures are \emph{silent (invisible) transitions} — a standard Petri net element that represents routing logic with no corresponding activity in the log. The Heuristic and Inductive miners introduce them to handle choices, parallelism, and loops structurally.
+
+The domestic Petri net (Figure~\ref{fig:dom_inductive_pn}), BPMN model (Figure~\ref{fig:dom_inductive_bpmn}), and process tree (Figure~\ref{fig:dom_inductive_tree}) clearly show the approval chain with choice points at each step — the BPMN representation is particularly readable, while the process tree reveals the hierarchical operator structure (sequence, choice, loop) that the Inductive Miner uses internally. The international Petri net (Figure~\ref{fig:intl_inductive_pn}), BPMN model (Figure~\ref{fig:intl_inductive_bpmn}), and process tree (Figure~\ref{fig:intl_inductive_tree}) are more complex but still structured, with the permit and declaration sub-workflows identifiable as separate regions.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/domestic_inductive_petri_net.png}
+    \caption{Petri net discovered by the Inductive Miner — Domestic.}
+    \label{fig:dom_inductive_pn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/domestic_inductive_bpmn.png}
+    \caption{BPMN model discovered by the Inductive Miner — Domestic.}
+    \label{fig:dom_inductive_bpmn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/domestic_inductive_process_tree.png}
+    \caption{Process tree discovered by the Inductive Miner — Domestic.}
+    \label{fig:dom_inductive_tree}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/international_inductive_petri_net.png}
+    \caption{Petri net discovered by the Inductive Miner — International.}
+    \label{fig:intl_inductive_pn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/international_inductive_bpmn.png}
+    \caption{BPMN model discovered by the Inductive Miner — International.}
+    \label{fig:intl_inductive_bpmn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/international_inductive_process_tree.png}
+    \caption{Process tree discovered by the Inductive Miner — International.}
+    \label{fig:intl_inductive_tree}
+\end{figure}
 
 \section{Conformance Checking and Model Comparison}
 
-% TODO:
-% - Token-based replay: fitness, precision, generalization for each model
-% - Comparison table
-% - Bar chart (output/conformance_comparison.png)
-% - Discussion: which model is best and why
+To compare the discovered models quantitatively, token-based replay was used to compute three quality metrics:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Fitness} — what fraction of the observed behavior can the model reproduce?
+    \item \textbf{Precision} — does the model allow behavior not observed in the log? Low precision means the model is too permissive.
+    \item \textbf{Generalization} — can the model generalize beyond the specific traces observed?
+\end{itemize}
 
-\textit{TODO: Conformance checking results and model comparison.}
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llccc@{}}
+\toprule
+\textbf{Log} & \textbf{Miner} & \textbf{Fitness} & \textbf{Precision} & \textbf{Generalization} \\
+\midrule
+Domestic & Alpha     & 0.7230 & 0.2500 & 0.7851 \\
+Domestic & Heuristic & 0.9252 & 0.8670 & 0.7516 \\
+Domestic & Inductive & 1.0000 & 0.3908 & 0.8554 \\
+\midrule
+International & Alpha     & 0.5436 & 0.0000 & 0.8987 \\
+International & Heuristic & 0.9011 & 0.9142 & 0.6808 \\
+International & Inductive & 0.9708 & 0.2257 & 0.8767 \\
+\bottomrule
+\end{tabular}
+\caption{Conformance checking results (token-based replay).}
+\label{tab:conformance}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{output/domestic_conformance.png}
+    \caption{Model quality comparison — Domestic.}
+    \label{fig:dom_conf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{output/international_conformance.png}
+    \caption{Model quality comparison — International.}
+    \label{fig:intl_conf}
+\end{figure}
+
+\subsection{Discussion}
+
+The \textbf{Alpha Miner} performs poorly on both logs. On the domestic log, fitness (0.72) and precision (0.25) are both low. On the international log, the situation is worse: fitness drops to 0.54 and precision falls to 0.00 — the model cannot meaningfully represent the observed behavior. This confirms that the Alpha Miner is unsuitable for real-world processes with this level of complexity.
+
+The \textbf{Inductive Miner} achieves the highest fitness on both logs (1.00 domestic, 0.97 international), which is expected given its soundness guarantees. However, its precision is low (0.39 domestic, 0.23 international), meaning the models are overly permissive — they accept many traces that were never observed. This is the well-known fitness--precision trade-off of the Inductive Miner.
+
+The \textbf{Heuristic Miner} again provides the best balance. On the domestic log, it achieves high fitness (0.93) and high precision (0.87). On the international log, it achieves 0.90 fitness with an even higher precision of 0.91 — the best precision of any model on either log. Its generalization is somewhat lower (0.68 international), suggesting the model fits the observed traces tightly, but this is an acceptable trade-off given the high precision.
+
+\textbf{Conclusion:} For both logs, the Heuristic Miner produces the most useful model, offering the best balance of faithfulness and specificity. The frequency thresholds that distinguish it from the Alpha Miner are critical for filtering out the noise and infrequent paths that dominate real-world event logs.
 
 \section{Evaluation and Conclusion}
 
-% TODO: Loop back to the three objectives from the introduction:
-% 1. Throughput comparison: what did we find?
-% 2. Bottlenecks: where are they, do they differ?
-% 3. Model comparison: which algorithm worked best?
-% Answer the central question: is there a throughput difference?
+Returning to the three objectives stated in the introduction:
 
-\textit{TODO: Final evaluation against stated goals.}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Throughput comparison:} There is a clear and substantial throughput difference between domestic and international declarations. Domestic cases have a median duration of 7.3 days; international cases have a median of 66.0 days — roughly 9 times longer. The distributions barely overlap, confirming this is a systematic difference rather than a statistical artifact.
+
+    \item \textbf{Bottleneck identification:} The duration decomposition revealed that the trip itself (median 4.0 days) accounts for only a small fraction of the international case duration. The dominant contributors are the pre-trip permit approval phase (median 26.4 days) and the post-trip declaration approval phase (median 19.7 days). Even after removing the trip duration entirely, international administrative overhead (median 58.3 days) remains roughly 8 times longer than the entire domestic process. The additional permit steps, multi-level authorization chains, and higher rejection/resubmission rates all contribute to this disparity.
+
+    \item \textbf{Model comparison:} Three discovery algorithms were applied to both logs. The Alpha Miner produced unusable models (especially for the international log, where precision was 0.00). The Inductive Miner achieved the highest fitness but at the cost of low precision. The Heuristic Miner provided the best overall balance on both logs, with domestic scores of 0.93/0.87/0.75 and international scores of 0.90/0.91/0.68 (fitness/precision/generalization).
+\end{enumerate}
+
+To answer the central question: \textbf{yes}, there is a large difference in throughput between domestic and international travel declarations, and it is driven primarily by administrative overhead — not by the travel itself.
+
+\section{Personal Notes}
+
+This was an interesting assignment to complete, it took me roughly a day's work. Looking back, I'm grateful for my choice of challenge dataset, as not having to spend so much time 'data wrangling' allowed me to focus on the rest of the assignment. I've found surprising use cases for utilizing agentic LLM systems while completing the assignment: they were able to accurately estimate the required runtime of the utilized algorithms. Although I suspect this might be because I've worked with well known datasets and algorithms. 
+
+All figures, the exported process models (PNML and BPMN), the analysis code that generated them, the event log datasets, and the full \LaTeX{} source of this report are available on GitHub at \url{https://github.com/dobosipeter/process-mining-submissions}.
 
 \end{document}
