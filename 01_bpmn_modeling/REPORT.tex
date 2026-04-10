@@ -103,8 +103,22 @@ Once a delivery batch is ready, the Delivery Driver loads all orders for that de
 Payment can occur in different ways:
 \begin{itemize}
     \item \textbf{Cash on delivery} (most common): The Delivery Driver collects cash payment from the customer upon delivery.
-    \item \textbf{Electronic payment} (bank transfer): The customer may pay electronically at any time up until delivery. Before the Delivery Driver departs, the Sales Manager checks whether electronic payment has been received and communicates the payment status to the Delivery Driver. If the payment has already arrived, no collection is needed at delivery. Otherwise, the Delivery Driver collects cash payment upon delivery as a fallback.
+    \item \textbf{Electronic payment} (bank transfer): The customer may pay electronically at any time up until delivery.
 \end{itemize}
+
+To handle both payment methods robustly, the Sales Manager's payment status check runs \textbf{in parallel} with the Delivery Driver's loading and delivery:
+\begin{itemize}
+    \item \textbf{Branch A (Sales Manager):} The Sales Manager checks whether electronic payment has been received. This check may take time, as it involves verifying bank statements or payment confirmations.
+    \item \textbf{Branch B (Delivery Driver):} The Delivery Driver loads the delivery van and delivers the orders to the customers.
+\end{itemize}
+
+Both branches must complete before proceeding. Once the delivery is done and the payment status is known, a decision is made:
+\begin{itemize}
+    \item If electronic payment \textbf{has been received}: no further action is needed.
+    \item If electronic payment \textbf{has not been received}: the Delivery Driver collects cash payment from the customer as a fallback.
+\end{itemize}
+
+This parallel structure ensures that the payment check covers the entire window up to (and including) the delivery itself, avoiding a race condition where a payment arriving after a pre-departure check but before delivery would be missed.
 
 After payment is collected (or confirmed as already received), the order is considered fulfilled and the process ends.
 
@@ -122,7 +136,8 @@ Pools              & Customer (external), Winery (internal) \\
 Lanes              & Sales Manager, Warehouse Worker, Delivery Driver \\
 Start Event        & Order received \\
 End Events         & Order fulfilled, Order cancelled \\
-Parallel Gateway   & Wine stock check and packaging material check run concurrently \\
+Parallel Gateway   & Wine stock check and packaging material check run concurrently; \\
+                   & payment status check runs concurrently with loading and delivery \\
 Exclusive Gateways & Stock availability, modify/cancel decision, payment method, \\
                    & delivery batch threshold \\
 Loop               & Customer modifies order $\rightarrow$ returns to order recording \\
@@ -142,6 +157,29 @@ Message Flow       & Communication between Customer pool and Winery pool \\
 %     \label{fig:bpmn}
 % \end{figure}
 
+\subsection{Known Limitations}
+
+The current BPMN model contains a structural issue related to the interaction between the parallel stock/packaging check and the out-of-stock exception path.
+
+\subsubsection{Parallel Join Deadlock on Order Cancellation}
+
+After the order is recorded, a \textbf{parallel gateway} splits the flow into two concurrent branches: the wine stock check and the packaging material check. Both branches must complete and converge at a downstream \textbf{parallel join gateway} before the process can proceed to packaging and invoicing.
+
+However, the wine stock check has a third outcome---\emph{completely out of stock}---which diverts the flow to the Sales Manager lane to notify the customer. If the customer then \textbf{cancels the order}, the process terminates at the ``Order Cancelled'' end event. The packaging material check branch, running independently, completes and delivers its token to the parallel join gateway. Since the wine branch never sends a token to this join in the out-of-stock scenario, the parallel join \textbf{waits indefinitely}---a classic AND-join deadlock. The packaging branch token becomes orphaned.
+
+The problem also manifests when the customer chooses to \textbf{modify the order} instead of cancelling: the flow loops back to ``Record Order,'' which re-enters the parallel split gateway and creates a \emph{new} pair of tokens for both branches. The old packaging branch token, however, remains stuck at the join gateway. Each modification loop iteration accumulates an additional orphan token.
+
+\subsubsection{Possible Resolutions}
+
+Resolving this deadlock would require restructuring the model, for example by:
+\begin{itemize}
+    \item Wrapping the parallel check region in an \textbf{embedded subprocess} with an \textbf{interrupting boundary event} or \textbf{error event} that terminates both branches when stock is unavailable.
+    \item Performing the wine stock check \emph{before} the parallel split, so that the out-of-stock path is handled before the packaging check is ever started.
+    \item Using a \textbf{termination event} or \textbf{cancel event} within a transaction subprocess.
+\end{itemize}
+
+These solutions would add considerable complexity to the diagram. The current model retains the simpler parallel structure as a known trade-off, with this limitation documented here.
+
 \section{Future Considerations}
 
 The current model captures the as-is state of the winery's order-to-cash process with some idealization for modeling clarity.
@@ -158,6 +196,10 @@ Several potential improvements and extensions could be explored in a future to-b
 
     \item \textbf{Dynamic delivery threshold calculation:} Rather than using fixed thresholds (6+ bottles or 3+ orders), the delivery trigger could be calculated dynamically based on factors such as distance to the delivery zone, fuel costs, and total order value, optimizing delivery efficiency.
 \end{enumerate}
+
+\section{Personal Notes}
+
+% TODO: Fill in with personal experiences of completing this homework assignment.
 
 \section{Conclusion}
 

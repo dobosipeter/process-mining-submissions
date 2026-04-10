@@ -78,7 +78,17 @@ Once a delivery batch is ready:
 
 Payment can occur in different ways:
 - **Cash on delivery** (most common): The Delivery Driver collects cash payment from the customer upon delivery.
-- **Electronic payment** (bank transfer): The customer may pay electronically at any time up until delivery. Before the Delivery Driver departs, the Sales Manager checks whether electronic payment has been received and communicates the payment status to the Delivery Driver. If the payment has already arrived, no collection is needed at delivery. Otherwise, the Delivery Driver collects cash payment upon delivery as a fallback.
+- **Electronic payment** (bank transfer): The customer may pay electronically at any time up until delivery.
+
+To handle both payment methods robustly, the Sales Manager's payment status check runs **in parallel** with the Delivery Driver's loading and delivery:
+- **Branch A (Sales Manager):** The Sales Manager checks whether electronic payment has been received. This check may take time, as it involves verifying bank statements or payment confirmations.
+- **Branch B (Delivery Driver):** The Delivery Driver loads the delivery van and delivers the orders to the customers.
+
+Both branches must complete before proceeding. Once the delivery is done and the payment status is known, a decision is made:
+- If electronic payment **has been received**: no further action is needed.
+- If electronic payment **has not been received**: the Delivery Driver collects cash payment from the customer as a fallback.
+
+This parallel structure ensures that the payment check covers the entire window up to (and including) the delivery itself, avoiding a race condition where a payment arriving after a pre-departure check but before delivery would be missed.
 
 After payment is collected (or confirmed as already received), the order is considered fulfilled and the process ends.
 
@@ -90,9 +100,9 @@ After payment is collected (or confirmed as already received), the order is cons
 | **Lanes** | Sales Manager, Warehouse Worker, Delivery Driver |
 | **Start Event** | Order received |
 | **End Events** | Order fulfilled, Order cancelled |
-| **Parallel Gateway** | Wine stock check and packaging material check run concurrently |
+| **Parallel Gateway** | Wine stock check and packaging material check run concurrently; payment status check runs concurrently with loading and delivery |
 | **Exclusive Gateways** | Stock availability decisions, customer modify/cancel decision, payment method, delivery batch threshold |
 | **Loop** | Customer modifies order → returns to order recording |
 | **Intermediate Event** | Waiting for delivery batch to accumulate |
 | **Message Flow** | Communication between Customer pool and Winery pool |
-| **Internal Communication** | Sales Manager confirms payment status to Delivery Driver before departure |
+| **Internal Communication** | Payment status determination synchronized with delivery completion |
